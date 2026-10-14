@@ -11,6 +11,7 @@
 
 // Register addresses 
 #define DS1722_CFG_READ    0x00
+//new
 #define DS1722_CFG_WRITE   0x80
 #define DS1722_TEMP_LSB    0x01
 #define DS1722_TEMP_MSB    0x02
