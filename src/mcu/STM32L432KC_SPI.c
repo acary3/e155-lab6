@@ -7,11 +7,11 @@
 #include "STM32L432KC_SPI.h"
 
 void initSPI(int br, int cpol, int cpha) {
-    // 1. Clocks: GPIOB for the pins, SPI1 lives on APB2
+    // Clocks: GPIOB for the pins, SPI1 lives on APB2
     gpioEnable(GPIO_PORT_B);
     RCC->APB2ENR |= RCC_APB2ENR_SPI1EN;
 
-    // 2. GPIO: SCK/MISO/MOSI to alternate function 5 (SPI1), CE as plain output.
+    // GPIO: SCK/MISO/MOSI to alternate function 5 (SPI1), CE as plain output.
     //    (PB3/PB4 default to JTAG at reset; reassigning them is fine because
     //    the board is programmed over SWD on PA13/PA14.)
     pinMode(SPI_SCK, GPIO_ALT);
@@ -28,7 +28,7 @@ void initSPI(int br, int cpol, int cpha) {
     // Faster edges on SCK/MOSI so the logic-analyzer traces are clean
     GPIOB->OSPEEDR |= GPIO_OSPEEDR_OSPEED3 | GPIO_OSPEEDR_OSPEED5;
 
-    // 3. SPI1 configuration (peripheral must be disabled while configuring)
+    // SPI1 configuration (peripheral must be disabled while configuring)
     SPI1->CR1 &= ~SPI_CR1_SPE;
     SPI1->CR1 = 0;
     SPI1->CR1 |= _VAL2FLD(SPI_CR1_BR, br);       // baud rate
@@ -37,10 +37,10 @@ void initSPI(int br, int cpol, int cpha) {
     SPI1->CR1 |= SPI_CR1_MSTR;                   // master mode
     SPI1->CR1 |= SPI_CR1_SSM | SPI_CR1_SSI;      // software NSS
 
-    // 8-bit frames; FRXTH so RXNE fires once 8 bits are in the RX FIFO
+    // 8-bit frames
     SPI1->CR2 = _VAL2FLD(SPI_CR2_DS, 0b0111) | SPI_CR2_FRXTH;
 
-    // 4. Enable
+    // Enable
     SPI1->CR1 |= SPI_CR1_SPE;
 }
 
