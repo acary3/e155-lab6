@@ -35,9 +35,7 @@ void initSPI(int br, int cpol, int cpha) {
     SPI1->CR1 |= _VAL2FLD(SPI_CR1_CPOL, cpol);   // clock polarity
     SPI1->CR1 |= _VAL2FLD(SPI_CR1_CPHA, cpha);   // clock phase
     SPI1->CR1 |= SPI_CR1_MSTR;                   // master mode
-    SPI1->CR1 |= SPI_CR1_SSM | SPI_CR1_SSI;      // software NSS (CE is a GPIO);
-                                                 // SSI=1 prevents a mode fault
-    // LSBFIRST = 0 (MSB first), RXONLY = 0, BIDIMODE = 0 (full duplex)
+    SPI1->CR1 |= SPI_CR1_SSM | SPI_CR1_SSI;      // software NSS
 
     // 8-bit frames; FRXTH so RXNE fires once 8 bits are in the RX FIFO
     SPI1->CR2 = _VAL2FLD(SPI_CR2_DS, 0b0111) | SPI_CR2_FRXTH;
@@ -47,17 +45,17 @@ void initSPI(int br, int cpol, int cpha) {
 }
 
 char spiSendReceive(char send) {
-    // Wait for room in the TX FIFO
+    // Waits for room in the TX FIFO
     while (!(SPI1->SR & SPI_SR_TXE));
 
-    // 8-bit access to DR so only one frame is queued (a 16-bit write packs two)
+    // 8-bit access to DR so only one frame is queued 
     *(volatile uint8_t *)(&SPI1->DR) = (uint8_t)send;
 
-    // Wait for the received byte, then read it with an 8-bit access
+    // Waits for the received byte, then read it with an 8-bit access
     while (!(SPI1->SR & SPI_SR_RXNE));
     char rec = (char)(*(volatile uint8_t *)(&SPI1->DR));
 
-    // Make sure the last clock edge is done before the caller drops CE
+    // Makes sure the last clock edge is done before the caller drops CE
     while (SPI1->SR & SPI_SR_BSY);
 
     return rec;
